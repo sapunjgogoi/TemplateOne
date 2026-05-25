@@ -79,10 +79,11 @@ dist/assets/index-B6YgXWmx.js                         929.00 kB
 ```
 
 ### Docker Orchestration Verification (Local)
-We solved three structural containerization issues:
+We solved four structural containerization issues:
 1. **OS/Libc Binary Conflict**: Added [frontend/.dockerignore](file:///d:/Aproject/TemplateOne/frontend/.dockerignore) and [backend/.dockerignore](file:///d:/Aproject/TemplateOne/backend/.dockerignore) to prevent copying the host's Windows `node_modules` into Linux container builds.
 2. **Missing Frontend Dependency**: Copied [pricing.json](file:///d:/Aproject/TemplateOne/frontend/src/components/pricing.json) directly into the frontend source folder to ensure it bundles successfully inside container boundaries.
 3. **Missing Sibling Folders (Backend)**: Changed the backend build context in [docker-compose.yml](file:///d:/Aproject/TemplateOne/docker-compose.yml) and [.github/workflows/deploy.yml](file:///d:/Aproject/TemplateOne/.github/workflows/deploy.yml) to the repository root `.`, copying `lambda/` and `templates/` folders during build.
+4. **Missing Lambda Sibling Dependencies**: Updated [backend/Dockerfile](file:///d:/Aproject/TemplateOne/backend/Dockerfile) to copy the `lambda/package.json` file and install its dependencies (like `zod` and `yaml`) inside the container at build-time. This resolves the `MODULE_NOT_FOUND` error for `zod` when running inside a clean CI checkout environment.
 
 Rebuilding and running the services locally results in clean, persistent container execution:
 ```text
