@@ -1,0 +1,10 @@
+{
+  "name": "aws-template-creator-lambda",
+  "version": "1.0.0",
+  "description": "AWS Lambda function for AWS Template Creator",
+  "main": "index.js",
+  "dependencies": {
+    "yaml": "^2.4.2",
+    "zod": "^4.4.3"
+  }
+}

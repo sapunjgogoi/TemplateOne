@@ -1,0 +1,12 @@
+resource "aws_instance" "app_server" {
+  ami           = "{{AMI_ID}}"
+  instance_type = "{{INSTANCE_TYPE}}"
+
+  tags = {
+    Name = "{{PROJECT_NAME}}"
+  }
+}
+
+resource "aws_s3_bucket" "storage" {
+  bucket = "{{STORAGE_BUCKET}}"
+}

@@ -1,0 +1,7 @@
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+
+    Properties:
+      InstanceType: {{INSTANCE_TYPE}}
+      ImageId: {{AMI_ID}}

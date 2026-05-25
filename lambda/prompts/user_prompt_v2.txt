@@ -1,0 +1,11 @@
+Generate infrastructure parameters for:
+- Stack: {{PROJECT_TYPE}} (Frontend: {{FRONTEND_TYPE}}, Backend: {{BACKEND_TYPE}})
+- Project Name: {{PROJECT_NAME}}
+- Database: {{DATABASE_TYPE}}
+- Traffic: {{TRAFFIC_LEVEL}}
+- AWS Free Tier Safe Mode: {{FREE_TIER_SAFE}}
+- Region: {{REGION}}
+- Docker: {{ENABLE_DOCKER}}
+- Kubernetes: {{ENABLE_KUBERNETES}}
+
+Return STRICT JSON only.
