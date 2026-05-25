@@ -16,6 +16,11 @@ mermaid.initialize({
   }
 });
 
+// Suppress Mermaid's default behavior of injecting an error banner into the body
+mermaid.parseError = (err, hash) => {
+  console.warn("Suppressed Mermaid syntax error:", err);
+};
+
 let diagramCounter = 0; // ensure unique IDs for each render
 
 // Sanitizes the Mermaid spec by wrapping unquoted node labels in double quotes.
@@ -67,6 +72,16 @@ export default function DiagramViewer({ diagramSpec }) {
       } catch (err) {
         console.error("Mermaid Render Error:", err);
         setError(true);
+        
+        // Clean up any error element injected by Mermaid to document.body
+        try {
+          const errorDiv = document.getElementById('dMermaidAndError') || document.querySelector('.mermaid-error');
+          if (errorDiv) {
+            errorDiv.remove();
+          }
+        } catch (e) {
+          console.error("Failed to clean up Mermaid error element:", e);
+        }
         
         // Try fallback default rendering
         try {
