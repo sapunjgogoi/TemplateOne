@@ -98,3 +98,12 @@ CONTAINER ID   IMAGE                  COMMAND                  CREATED         S
 ```
 The application is now accessible locally on Port 80, and reverse proxy routing between Nginx and the Node Express server runs without issues.
 
+### Production Verification (AWS EC2)
+The application has been successfully deployed to the AWS EC2 instance at `http://100.54.27.204`. 
+
+1. **Accessibility**: Users can access the frontend dashboard directly over standard HTTP (Port 80) via the public IP.
+2. **Reverse Proxy & Backend API**: Verified that the Nginx server successfully forwards client requests from `/api/generate` to the Node.js backend container on Port 5000.
+3. **Template Customization & Diagram Rendering**: The AI-assisted customizer successfully outputs valid customized files (Terraform, CloudFormation, Kubernetes, Docker Compose) and renders live blueprints via Mermaid without any runtime console exceptions.
+4. **Resiliency**: The containers are configured to run persistently in detached mode and will restart automatically in case of crashes or system reboots.
+
+
