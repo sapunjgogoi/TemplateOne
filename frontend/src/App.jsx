@@ -12,8 +12,17 @@ import {
   HelpCircle,
   AlertTriangle,
   Sun,
-  Moon
+  Moon,
+  Lock
 } from 'lucide-react';
+import { 
+  SignedIn, 
+  SignedOut, 
+  SignInButton, 
+  UserButton, 
+  useAuth, 
+  useUser 
+} from '@clerk/clerk-react';
 import RequirementForm from './components/RequirementForm';
 import CodeViewer from './components/CodeViewer';
 import CostCalculator from './components/CostCalculator';
@@ -23,6 +32,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  
+  // Clerk authentication state
+  const { getToken, isSignedIn } = useAuth();
+  const { user } = useUser();
   
   // Light/Dark Theme State
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
@@ -57,12 +70,20 @@ export default function App() {
   const [apiResponse, setApiResponse] = useState(null);
 
   const handleGenerate = async () => {
+    if (!isSignedIn) {
+      setErrorMsg('You must be signed in to generate templates.');
+      return;
+    }
     setIsGenerating(true);
     setErrorMsg('');
     try {
+      const token = await getToken();
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(formData)
       });
 
@@ -149,6 +170,27 @@ export default function App() {
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+
+          {/* Clerk Authentication */}
+          <div className="flex items-center">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="bg-cobaltBlue hover:bg-cobaltBlue-dark text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition-all shadow-glowCobalt flex items-center justify-center h-[38px]">
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <div className="flex items-center gap-2 bg-[var(--input-bg)] px-2 py-1 rounded-xl border border-[var(--border-color)] h-[38px]">
+                <span className="hidden lg:inline text-xs text-[var(--text-muted)] font-medium px-1 font-semibold">
+                  Hi, {user?.firstName || 'User'}
+                </span>
+                <div className="flex items-center justify-center">
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+              </div>
+            </SignedIn>
+          </div>
         </div>
       </header>
 
@@ -242,53 +284,103 @@ export default function App() {
 
         {/* TAB 2: Template Generator */}
         {activeTab === 'generator' && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Form */}
-              <div className="lg:col-span-1">
-                <RequirementForm 
-                  formData={formData} 
-                  setFormData={setFormData} 
-                  onSubmit={handleGenerate} 
-                  isGenerating={isGenerating} 
-                />
-              </div>
-
-              {/* Outputs (Diagram & Code Viewer) */}
-              <div className="lg:col-span-2 space-y-6">
-                {apiResponse ? (
-                  <>
-                    <DiagramViewer diagramSpec={apiResponse.diagramSpec} />
-                    <CodeViewer 
-                      files={apiResponse.files} 
-                      recommendations={apiResponse.recommendations} 
-                      fallbackActive={apiResponse.fallbackActive}
-                      fallbackReason={apiResponse.fallbackReason}
-                      projectName={formData.projectName}
+          <>
+            <SignedIn>
+              <div className="space-y-8 animate-fade-in">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Form */}
+                  <div className="lg:col-span-1">
+                    <RequirementForm 
+                      formData={formData} 
+                      setFormData={setFormData} 
+                      onSubmit={handleGenerate} 
+                      isGenerating={isGenerating} 
                     />
-                  </>
-                ) : (
-                  <div className="glass-panel rounded-2xl p-12 text-center text-[var(--text-muted)] border-[var(--border-color)] h-full flex flex-col justify-center items-center">
-                    <Cloud className="text-[var(--text-muted)] mb-4 animate-pulse" size={54} />
-                    <h3 className="font-bold text-[var(--text-color)] text-base">Templates and Architecture Diagram Not Generated</h3>
-                    <p className="text-xs text-[var(--text-muted)] mt-2 max-w-sm">
-                      Configure your cloud stack preferences in the left panel and click the generate button.
-                    </p>
                   </div>
-                )}
+
+                  {/* Outputs (Diagram & Code Viewer) */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {apiResponse ? (
+                      <>
+                        <DiagramViewer diagramSpec={apiResponse.diagramSpec} />
+                        <CodeViewer 
+                          files={apiResponse.files} 
+                          recommendations={apiResponse.recommendations} 
+                          fallbackActive={apiResponse.fallbackActive}
+                          fallbackReason={apiResponse.fallbackReason}
+                          projectName={formData.projectName}
+                        />
+                      </>
+                    ) : (
+                      <div className="glass-panel rounded-2xl p-12 text-center text-[var(--text-muted)] border-[var(--border-color)] h-full flex flex-col justify-center items-center">
+                        <Cloud className="text-[var(--text-muted)] mb-4 animate-pulse" size={54} />
+                        <h3 className="font-bold text-[var(--text-color)] text-base">Templates and Architecture Diagram Not Generated</h3>
+                        <p className="text-xs text-[var(--text-muted)] mt-2 max-w-sm">
+                          Configure your cloud stack preferences in the left panel and click the generate button.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </SignedIn>
+            <SignedOut>
+              <div className="glass-panel rounded-3xl p-12 text-center border-[var(--border-color)] max-w-xl mx-auto space-y-6 animate-fade-in relative overflow-hidden bg-gradient-to-b from-[var(--card-bg)] to-[var(--card-bg)]/60">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-cobaltBlue/10 rounded-full blur-3xl" />
+                <div className="bg-cobaltBlue/10 p-4 rounded-2xl text-cobaltBlue inline-flex shadow-glowCobalt">
+                  <Lock size={32} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-extrabold text-[var(--text-color)] text-2xl tracking-tight">AI Generator is Locked</h3>
+                  <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
+                    Sign in or register for a free TemplateOne account to construct templates, customize Docker configurations, and generate cloud architectures.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <SignInButton mode="modal">
+                    <button className="bg-cobaltBlue hover:bg-cobaltBlue-dark text-white font-bold py-3 px-8 rounded-xl transition-all shadow-glowCobalt text-sm">
+                      Get Started Free
+                    </button>
+                  </SignInButton>
+                </div>
+              </div>
+            </SignedOut>
+          </>
         )}
 
         {/* TAB 3: Cost Playground */}
         {activeTab === 'costs' && (
-          <div className="animate-fade-in">
-            <CostCalculator 
-              generatedCosts={apiResponse ? apiResponse.estimatedCosts : null} 
-              freeTierSafe={formData.freeTierSafe} 
-            />
-          </div>
+          <>
+            <SignedIn>
+              <div className="animate-fade-in">
+                <CostCalculator 
+                  generatedCosts={apiResponse ? apiResponse.estimatedCosts : null} 
+                  freeTierSafe={formData.freeTierSafe} 
+                />
+              </div>
+            </SignedIn>
+            <SignedOut>
+              <div className="glass-panel rounded-3xl p-12 text-center border-[var(--border-color)] max-w-xl mx-auto space-y-6 animate-fade-in relative overflow-hidden bg-gradient-to-b from-[var(--card-bg)] to-[var(--card-bg)]/60">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-cobaltBlue/10 rounded-full blur-3xl" />
+                <div className="bg-cobaltBlue/10 p-4 rounded-2xl text-cobaltBlue inline-flex shadow-glowCobalt">
+                  <Lock size={32} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-extrabold text-[var(--text-color)] text-2xl tracking-tight">Cost Calculator is Locked</h3>
+                  <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
+                    Estimate and visualize AWS monthly prices by connecting your profile. Log in to access the Interactive Cost Calculator.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <SignInButton mode="modal">
+                    <button className="bg-cobaltBlue hover:bg-cobaltBlue-dark text-white font-bold py-3 px-8 rounded-xl transition-all shadow-glowCobalt text-sm">
+                      Log In to Access Costs
+                    </button>
+                  </SignInButton>
+                </div>
+              </div>
+            </SignedOut>
+          </>
         )}
 
         {/* TAB 4: About / Help */}

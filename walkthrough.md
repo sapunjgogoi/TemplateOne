@@ -106,4 +106,13 @@ The application has been successfully deployed to the AWS EC2 instance at `http:
 3. **Template Customization & Diagram Rendering**: The AI-assisted customizer successfully outputs valid customized files (Terraform, CloudFormation, Kubernetes, Docker Compose) and renders live blueprints via Mermaid without any runtime console exceptions.
 4. **Resiliency**: The containers are configured to run persistently in detached mode and will restart automatically in case of crashes or system reboots.
 
+---
 
+### 🛡️ Clerk Authentication Integration (SaaS Security)
+We upgraded TemplateOne from a stateless utility to a secure, gated SaaS application:
+1. **Frontend Hook Integration**: Wrapped `<App />` with `<ClerkProvider>` inside [main.jsx](file:///d:/Aproject/TemplateOne/frontend/src/main.jsx) and integrated authentication state checking.
+2. **Security Locking & Gating**:
+   * Protected the **Generator** and **Cost Playground** tabs in [App.jsx](file:///d:/Aproject/TemplateOne/frontend/src/App.jsx). Signed-out users are presented with a premium glassmorphic lock screen.
+   * Standard header action bar displays a **Sign In** modal button when signed out, and a **User Account Menu** when signed in.
+3. **Token Authorization**: Updated the frontend API request to fetch Clerk's JWT session token via `useAuth().getToken()` and pass it inside the `Authorization: Bearer <token>` header of `/api/generate` requests.
+4. **Backend Middleware Verification**: Added `@clerk/express` middleware globally in [server.js](file:///d:/Aproject/TemplateOne/backend/server.js) and locked down the `/api/generate` route using `requireAuth()`, which decodes and validates incoming session tokens.

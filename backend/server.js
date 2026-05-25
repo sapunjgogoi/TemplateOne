@@ -9,6 +9,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { handler } = require('../lambda/index');
+const { clerkMiddleware, requireAuth } = require('@clerk/express');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Mount Clerk middleware to inspect and authenticate JWT tokens
+app.use(clerkMiddleware());
 
 // Set up rate limiter to prevent abuse (max 100 requests per 15 minutes)
 const apiLimiter = rateLimit({
@@ -56,8 +60,9 @@ function getCacheKey(body) {
 }
 
 // POST endpoint simulating API Gateway trigger to AWS Lambda
-app.post('/api/generate', async (req, res) => {
+app.post('/api/generate', requireAuth(), async (req, res) => {
   const cacheKey = getCacheKey(req.body);
+  console.log(`[AUTH] Request authorized for Clerk User ID: ${req.auth.userId}`);
   
   // Check memory cache
   if (generatorCache.has(cacheKey)) {
