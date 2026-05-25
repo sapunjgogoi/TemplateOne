@@ -93,3 +93,14 @@ To verify that the implementation is running correctly:
 1. **Mock Fallback Check**: Run the generator without adding a Gemini API Key in `backend/.env`. The generator should immediately load valid static templates with a warning banner indicating that offline templates are active.
 2. **Free Tier Restriction Check**: Toggle the "Free Tier Safe Mode" switch. The instance configurations in the Cost Playground should cap at $0.00 and lock selector parameters automatically.
 3. **ZIP Packaging Check**: Generate templates and click "Download All". A zip file containing structured templates (`terraform.tf`, `docker-compose.yml`, `k8s-deployment.yaml`, `cloudformation.yaml`, `README.md`, and a JSON manifest) should download client-side.
+
+---
+
+## CI/CD Secrets Setup
+To deploy this project successfully via GitHub Actions, ensure you have configured the following Repository Secrets:
+* `DOCKER_USERNAME` / `DOCKER_PASSWORD`: Docker Hub credentials.
+* `EC2_HOST` / `EC2_SSH_KEY`: SSH details to access the AWS EC2 instance.
+* `GEMINI_API_KEY`: API key for Google Gemini model generation.
+* `CLERK_PUBLISHABLE_KEY`: The frontend publishable key for user session context.
+* `CLERK_SECRET_KEY`: The backend secret key for authentication verification.
+
